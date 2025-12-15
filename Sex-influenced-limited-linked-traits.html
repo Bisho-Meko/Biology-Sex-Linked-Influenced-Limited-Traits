@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biology Quiz: Sex-Linked, Limited, & Influenced Traits</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #e9ecef;
+            color: #333;
+        }
+        .container {
+            max-width: 850px;
+            margin: auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+        .intro-form {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            background-color: #eaf5ff;
+        }
+        .intro-form input {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            width: 90%; 
+        }
+        #start-quiz-btn {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px; 
+        }
+        #start-quiz-btn:hover { background-color: #1e7e34; }
+        
+        #quiz-container { display: none; } 
+
+        .question-block {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .question-text {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .choice-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .choice-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .choice-item.disabled {
+            cursor: default;
+        }
+        .choice-item:not(.disabled):hover {
+            background-color: #e2e6ea;
+            border-color: #adb5bd;
+        }
+        .correct {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            font-weight: bold;
+        }
+        .incorrect {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            font-weight: bold;
+        }
+        .feedback {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            font-size: 0.95em;
+        }
+        .feedback.correct {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        #results-area {
+            text-align: center;
+            padding: 20px;
+            border-top: 2px solid #007bff;
+            margin-top: 20px;
+            display: none;
+        }
+        #results-area button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #results-area button:hover {
+            background-color: #0056b3;
+        }
+        #status-message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sex-Linked, Limited, and Influenced Traits</h1>
+        
+        <div class="intro-form">
+            <input type="text" id="student-name" placeholder="Your Name" required>
+            <button id="start-quiz-btn"><span style="font-weight: bold;">BEGIN the BATTLE</span></button>
+        </div>
+
+        <div id="quiz-container">
+            </div>
+
+        <div id="results-area">
+            <h2>Quiz Finished!</h2>
+            <p id="final-score">Score: 0/30</p>
+            <button id="submit-results-btn">Finish</button>
+            <div id="status-message"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const FORMSPREE_ENDPOINT = "https://formspree.io/f/xblnergd"; 
+        // -----------------------
+
+        const quizData = [
+            // SEX-LINKED QUESTIONS (1-10)
+            // 1. Target: A
+            { qNum: 1, question: "Where are the genes for sex-linked traits located?", choices: ["A. Exclusively on the sex chromosomes (X or Y).", "B. On the autosomal chromosomes.", "C. In the mitochondrial DNA.", "D. Only on the Y chromosome."], answer: "A", rationale: "Sex-linked traits are determined by genes located exclusively on the sex chromosomes (X or Y)." },
+            // 2. Target: B
+            { qNum: 2, question: "Why do males express X-linked recessive disorders more frequently than females?", choices: ["A. Males have two X chromosomes.", "B. Males have only one X chromosome and no second X to mask the recessive allele.", "C. The Y chromosome carries a dominant allele that triggers the disease.", "D. Males have weaker immune systems."], answer: "B", rationale: "Males possess only one X chromosome. If it carries a disorder, there is no second X to provide a healthy, dominant allele." },
+            // 3. Target: D
+            { qNum: 3, question: "In the context of sex-linked traits, what is a female called who has one disease gene on an X chromosome but is protected by a healthy gene on the other?", choices: ["A. Affected", "B. Dominant", "C. Recessive", "D. Carrier"], answer: "D", rationale: "Females with two X chromosomes can be 'carriers,' having the disease gene on one X while being protected by a healthy gene on the other." },
+            // 4. Target: C
+            { qNum: 4, question: "Red-Green Color Blindness is an example of which inheritance pattern?", choices: ["A. Sex-limited", "B. Sex-influenced", "C. X-linked recessive", "D. Autosomal dominant"], answer: "C", rationale: "Red-Green Color Blindness illustrates a classic X-linked recessive inheritance pattern." },
+            // 5. Target: D
+            { qNum: 5, question: "Hemophilia is a disorder that primarily impairs what bodily function?", choices: ["A. Vision", "B. Muscle growth", "C. Hair growth", "D. Blood clotting"], answer: "D", rationale: "Hemophilia is a bleeding disorder that impairs the body's ability to make blood clots." },
+            // 6. Target: A
+            { qNum: 6, question: "If a male has a recessive allele for color blindness on his single X chromosome, what is the phenotype?", choices: ["A. He is affected by color blindness.", "B. He is a carrier.", "C. He has normal vision.", "D. He will only pass it to his sons."], answer: "A", rationale: "Males are affected if their single X chromosome carries the recessive allele." },
+            // 7. Target: A
+            { qNum: 7, question: "Which statement accurately describes the inheritance of Hemophilia?", choices: ["A. It predominately affects males due to having only one X chromosome.", "B. It affects females more often than males.", "C. It is a dominant trait on the Y chromosome.", "D. It is a sex-limited trait found only in men."], answer: "A", rationale: "It predominantly affects males, showcasing the severity of conditions when only one X chromosome is present." },
+            // 8. Target: B
+            { qNum: 8, question: "Unlike sex-linked traits, where are the genes for sex-limited traits located?", choices: ["A. On the X chromosome.", "B. On the autosomes (non-sex chromosomes).", "C. On the Y chromosome.", "D. They are not found in the nucleus."], answer: "B", rationale: "Sex-limited traits are governed by genes located on autosomes (non-sex chromosomes)." },
+            // 9. Target: B
+            { qNum: 9, question: "Which of the following is NOT an example of a Sex-Linked trait mentioned in the text?", choices: ["A. Hemophilia", "B. Male Pattern Baldness", "C. Red-Green Color Blindness", "D. Duchenne Muscular Dystrophy"], answer: "B", rationale: "Male Pattern Baldness is listed as a Sex-Influenced trait, not Sex-Linked." },
+            // 10. Target: D
+            { qNum: 10, question: "What is the key chromosomal constitution difference between human males and females mentioned in the text?", choices: ["A. Males are XX, Females are XY.", "B. Males are YY, Females are XX.", "C. Both are XY but different sizes.", "D. Males are XY, Females are XX."], answer: "D", rationale: "The text refers to the XY (male) and XX (female) chromosome constitution." },
+
+            // SEX-LIMITED QUESTIONS (11-20)
+            // 11. Target: C
+            { qNum: 11, question: "What defines a Sex-Limited trait?", choices: ["A. It is found on the sex chromosomes.", "B. It is expressed in both sexes but differently.", "C. It is expressed physically in only ONE sex.", "D. It causes limited lifespan."], answer: "C", rationale: "Sex-limited traits are expressed exclusively in one sex." },
+            // 12. Target: C
+            { qNum: 12, question: "If a trait is Sex-Limited to males, what is the 'penetrance' of this trait in females?", choices: ["A. 100%", "B. 50%", "C. Zero penetrance", "D. Variable penetrance"], answer: "C", rationale: "The other sex carries the genes but never displays the trait, demonstrating zero penetrance." },
+            // 13. Target: D
+            { qNum: 13, question: "Milk production in cattle is an example of which type of trait?", choices: ["A. Sex-Linked", "B. Sex-Influenced", "C. Autosomal Recessive", "D. Sex-Limited"], answer: "D", rationale: "Milk production in cattle is a sex-limited trait; both carry the genes, but only cows express it." },
+            // 14. Target: A
+            { qNum: 14, question: "What factor is often required for the expression of sex-limited traits?", choices: ["A. Particular hormones or sex-specific anatomy.", "B. A second X chromosome.", "C. A specific viral infection.", "D. Sunlight exposure."], answer: "A", rationale: "Expression often requires particular hormones or sex-specific anatomy, such as ovaries or testes." },
+            // 15. Target: B
+            { qNum: 15, question: "In humans, beard growth is considered a sex-limited trait. Who carries the genes for facial hair thickness?", choices: ["A. Only men.", "B. Both men and women.", "C. Only women.", "D. Neither; it is environmental."], answer: "B", rationale: "Women carry the genes for facial hair thickness (which they can pass to their sons) just as men do." },
+            // 16. Target: B
+            { qNum: 16, question: "Why do hens NOT develop elaborate rooster tail feathers despite carrying the genetic information?", choices: ["A. They lack the gene entirely.", "B. Their hormonal profile prevents the development.", "C. The gene is on the Y chromosome.", "D. They have a dominant suppressor gene."], answer: "B", rationale: "Hens carry the genetic information, but their hormonal profile prevents the development of such plumage." },
+            // 17. Target: C
+            { qNum: 17, question: "If a gene remains 'completely turned off' in one sex due to the absence of specific hormones, it is likely:", choices: ["A. Sex-Linked", "B. Sex-Influenced", "C. Sex-Limited", "D. A mutation"], answer: "C", rationale: "In the absence of factors like specific hormones, the gene remains completely 'turned off,' characteristic of sex-limited traits." },
+            // 18. Target: A
+            { qNum: 18, question: "Can a female cattle pass the genes for high milk production to her male offspring?", choices: ["A. Yes, the genes are autosomal and present in both sexes.", "B. No, only to female offspring.", "C. No, because it is a sex-linked trait.", "D. Yes, but the male will produce milk."], answer: "A", rationale: "The genetic instructions for sex-limited traits are present in both sexes, residing on autosomes." },
+            // 19. Target: C
+            { qNum: 19, question: "Which of the following serves as an example of a Sex-Limited trait in birds?", choices: ["A. Egg shell color", "B. Wing span", "C. Rooster tail feathers", "D. Beak shape"], answer: "C", rationale: "The elaborate, colorful tail feathers that are characteristic of roosters are a sex-limited trait." },
+            // 20. Target: A
+            { qNum: 20, question: "The summary rule for Sex-Limited traits states they are:", choices: ["A. Expressed physically in only ONE sex.", "B. Located on the X or Y chromosome.", "C. Visible in both sexes but modified by hormones.", "D. Always fatal in males."], answer: "A", rationale: "Limited: Expressed physically in only ONE sex (e.g., milk production)." },
+
+            // SEX-INFLUENCED QUESTIONS (21-30)
+            // 21. Target: D
+            { qNum: 21, question: "How does a Sex-Influenced trait differ from a Sex-Limited trait?", choices: ["A. It is only found on the X chromosome.", "B. It is visible in only ONE sex.", "C. It is not affected by hormones.", "D. It is visible in BOTH sexes, but expression differs."], answer: "D", rationale: "Sex-influenced traits are visible in both sexes, but their penetrance or dominance changes, unlike sex-limited which is one sex only." },
+            // 22. Target: D
+            { qNum: 22, question: "Male Pattern Baldness is an example of a Sex-Influenced trait because:", choices: ["A. Only men can go bald.", "B. Women never lose hair.", "C. The gene is located on the Y chromosome.", "D. The gene is dominant in men but recessive in women."], answer: "D", rationale: "The baldness gene is dominant in men but recessive in women." },
+            // 23. Target: B
+            { qNum: 23, question: "For a woman to exhibit significant thinning due to Male Pattern Baldness, she requires:", choices: ["A. One copy of the gene.", "B. Two copies of the gene.", "C. High levels of testosterone.", "D. No copies of the gene."], answer: "B", rationale: "In women, the trait is recessive, requiring two copies for significant thinning." },
+            // 24. Target: C
+            { qNum: 24, question: "Index Finger Length relative to the ring finger is determined by a gene that is:", choices: ["A. Dominant in females, Recessive in males.", "B. Recessive in both sexes.", "C. Dominant in males, Recessive in females.", "D. Sex-linked on the X chromosome."], answer: "C", rationale: "The gene for a shorter index finger is dominant in males but recessive in females." },
+            // 25. Target: D
+            { qNum: 25, question: "What is the primary biological factor that modifies the expression of Sex-Influenced traits?", choices: ["A. Temperature", "B. Sunlight", "C. Diet", "D. Hormones"], answer: "D", rationale: "Sex-influenced traits are expressed differently due to hormonal influences." },
+            // 26. Target: B
+            { qNum: 26, question: "In Sex-Influenced traits, the 'dominance' of the allele:", choices: ["A. Is always dominant.", "B. Changes depending on the sex of the individual.", "C. Is always recessive.", "D. Is irrelevant."], answer: "B", rationale: "The trait is visible in both sexes, but its penetrance or dominance changes." },
+            // 27. Target: C
+            { qNum: 27, question: "If a man has one copy of the 'shorter index finger' gene, he will have a short index finger. If a woman has one copy, she will not. This confirms the trait is:", choices: ["A. Sex-Linked Recessive", "B. Sex-Limited", "C. Sex-Influenced", "D. Autosomal Dominant"], answer: "C", rationale: "This results in observable differences in finger ratios between sexes due to dominance differences (Dominant in males, Recessive in females)." },
+            // 28. Target: A
+            { qNum: 28, question: "Are the genes for Sex-Influenced traits located on the sex chromosomes?", choices: ["A. No, they are on autosomes.", "B. Yes, always on X.", "C. Yes, always on Y.", "D. Yes, on both X and Y."], answer: "A", rationale: "Sex-influenced traits are controlled by genes on autosomes." },
+            // 29. Target: C
+            { qNum: 29, question: "Which of the following is the 'Summary Rule' for Sex-Influenced traits provided in the text?", choices: ["A. Gene is on the X or Y.", "B. Expressed physically in only ONE sex.", "C. Both sexes show the trait, but hormones modify expression (e.g. dominance).", "D. The trait is never expressed."], answer: "C", rationale: "Influenced: Both sexes show the trait, but hormones modify its expression (e.g., dominance)." },
+            // 30. Target: D
+            { qNum: 30, question: "Why are these distinctions (Linked, Limited, Influenced) considered crucial?", choices: ["A. To determine the gender of a baby.", "B. To increase the cost of healthcare.", "C. They are not actually important.", "D. For genetic counseling and disease understanding."], answer: "D", rationale: "These distinctions are crucial for genetic counseling, disease understanding, and even animal breeding." }
+        ];
+
+        let studentName = '';
+        let score = 0;
+        let answeredQuestions = 0;
+
+        // --- DOM ELEMENTS ---
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        const studentNameInput = document.getElementById('student-name');
+        const introForm = document.querySelector('.intro-form');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsArea = document.getElementById('results-area');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const submitResultsBtn = document.getElementById('submit-results-btn');
+        const statusMessageDiv = document.getElementById('status-message');
+
+
+        // --- FUNCTIONALITY ---
+
+        function generateQuiz() {
+            let html = '';
+            quizData.forEach((data) => {
+                html += `<div class="question-block" id="q-${data.qNum}">
+                            <span class="question-text">${data.qNum}. ${data.question}</span>
+                            <ul class="choice-list" data-qnum="${data.qNum}">`;
+
+                data.choices.forEach((choice, index) => {
+                    const choiceLetter = String.fromCharCode(65 + index);
+                    // The choice strings in quizData already contain "A. ", "B. ", etc.
+                    // We can display them directly or parse them. 
+                    // To match previous logic that added letters dynamically:
+                    // But here I hardcoded letters in the choices array above for clarity.
+                    // Let's just use the text as provided in the array:
+                    html += `<li class="choice-item" data-choice="${choiceLetter}">${choice}</li>`;
+                });
+
+                html += `</ul>
+                         <div class="feedback" id="feedback-${data.qNum}"></div>
+                         </div>`;
+            });
+            quizContainer.innerHTML = html;
+        }
+
+        function handleChoiceClick(event) {
+            const clickedItem = event.target.closest('.choice-item');
+            if (!clickedItem || clickedItem.classList.contains('disabled')) return;
+
+            const choicesList = clickedItem.closest('.choice-list');
+            const qNum = choicesList.getAttribute('data-qnum');
+            const questionData = quizData.find(q => q.qNum == qNum);
+            const feedbackDiv = document.getElementById(`feedback-${qNum}`);
+
+            // Prevent re-clicking and register question as answered
+            if (choicesList.classList.contains('answered')) {
+                return;
+            }
+            choicesList.classList.add('answered');
+            answeredQuestions++;
+
+            // Disable all choices for this question
+            Array.from(choicesList.children).forEach(item => item.classList.add('disabled'));
+
+            const selectedChoice = clickedItem.getAttribute('data-choice');
+            const isCorrect = selectedChoice === questionData.answer;
+
+            // Update score
+            if (isCorrect) {
+                score++;
+            }
+
+            // Apply styling
+            clickedItem.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+            // Find and highlight the correct answer if the selected one was wrong
+            if (!isCorrect) {
+                Array.from(choicesList.children).forEach(item => {
+                    if (item.getAttribute('data-choice') === questionData.answer) {
+                        item.classList.add('correct');
+                    }
+                });
+            }
+
+            // Display feedback and rationale
+            feedbackDiv.style.display = 'block';
+            feedbackDiv.classList.add(isCorrect ? 'correct' : 'incorrect');
+            
+            const resultText = isCorrect ? '✅ Correct! ' : '❌ Incorrect. ';
+            feedbackDiv.innerHTML = `<strong>${resultText}</strong> The correct answer is **${questionData.answer}**. <br> ${questionData.rationale}`;
+            
+            // Check if quiz is complete
+            if (answeredQuestions === quizData.length) {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizContainer.style.display = 'none';
+            finalScoreDisplay.textContent = `Score: ${score}/${quizData.length}`;
+            resultsArea.style.display = 'block';
+        }
+
+        async function submitResults() {
+            
+            submitResultsBtn.disabled = true;
+            statusMessageDiv.innerHTML = '<span style="color:#007bff;">Submitting... Please wait.</span>';
+
+            const data = {
+                'Student Name': studentName,
+                'Quiz Score': `${score}/${quizData.length}`,
+                'Quiz Name': 'Biology Inheritance Quiz',
+                'Timestamp': new Date().toLocaleString()
+            };
+
+            try {
+                const response = await fetch(FORMSPREE_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    statusMessageDiv.innerHTML = '<span style="color:#28a745;">✅ Results submitted successfully to bishotasks@gmail.com!</span>';
+                } else {
+                    const errorData = await response.json();
+                    console.error('Formspree submission error:', errorData);
+                    statusMessageDiv.innerHTML = `<span style="color:red;">❌ Submission failed. Status: ${response.status}. Please check Formspree dashboard.</span>`;
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+                statusMessageDiv.innerHTML = '<span style="color:red;">❌ Network error. Could not connect to submission service.</span>';
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+
+        startQuizBtn.addEventListener('click', () => {
+            studentName = studentNameInput.value.trim();
+
+            if (!studentName) {
+                alert("Please enter your name to start the quiz.");
+                studentNameInput.focus();
+                return;
+            }
+
+            introForm.style.display = 'none';
+            quizContainer.style.display = 'block';
+        });
+
+        document.getElementById('quiz-container').addEventListener('click', handleChoiceClick);
+        submitResultsBtn.addEventListener('click', submitResults);
+
+        // --- INITIALIZATION ---
+        generateQuiz();
+
+    </script>
+</body>
+</html>
